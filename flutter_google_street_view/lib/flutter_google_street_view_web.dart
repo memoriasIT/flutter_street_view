@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:html';
 import 'dart:js_interop';
 import 'dart:math';
+import 'dart:ui_web' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';

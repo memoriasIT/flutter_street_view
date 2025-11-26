@@ -51,41 +51,47 @@ class FlutterGoogleStreetViewPlugin {
   gmaps.MapsEventListener? _closeclickListener;
 
   Future<void> _setup(Map<String, dynamic> arg, [bool isReuse = false]) async {
-    StreetViewPanoramaOptions options;
+    street_view.StreetViewPanoramaOptions options;
     String? errorMsg;
     try {
-      options =
-      (await toStreetViewPanoramaOptions(arg)) as StreetViewPanoramaOptions;
+      options = await toStreetViewPanoramaOptions(arg);
     } catch (exception) {
-      NoStreetViewException noStreetViewException =
-      (exception as NoStreetViewException);
-      options = (noStreetViewException.options..visible = false)
-      as StreetViewPanoramaOptions;
-      errorMsg = noStreetViewException.errorMsg;
+      if (exception is NoStreetViewException) {
+        NoStreetViewException noStreetViewException = exception;
+        options = (noStreetViewException.options..visible = false);
+        errorMsg = noStreetViewException.errorMsg;
+      } else {
+        // Handle other exceptions (like TypeError from cast failures)
+        // Re-throw if it's not a NoStreetViewException
+        rethrow;
+      }
     }
 
     Completer<bool> initDone = Completer();
     if (!isReuse) {
       _streetViewPanorama = street_view.StreetViewPanorama(
         _div,
-        options as street_view.StreetViewPanoramaOptions?,
+        options,
       );
     } else {
       //reuse _streetViewPanorama
       //set to invisible before init, then set visible after init done.
-      StreetViewPanoramaOptions fakeOptions;
+      street_view.StreetViewPanoramaOptions fakeOptions;
       try {
         fakeOptions = (await toStreetViewPanoramaOptions(arg)
-          ..visible = false) as StreetViewPanoramaOptions;
+          ..visible = false);
       } catch (exception) {
-        NoStreetViewException noStreetViewException =
-        (exception as NoStreetViewException);
-        fakeOptions = (noStreetViewException.options..visible = false)
-        as StreetViewPanoramaOptions;
-        errorMsg = noStreetViewException.errorMsg;
+        if (exception is NoStreetViewException) {
+          NoStreetViewException noStreetViewException = exception;
+          fakeOptions = (noStreetViewException.options..visible = false);
+          errorMsg = noStreetViewException.errorMsg;
+        } else {
+          // Handle other exceptions (like TypeError from cast failures)
+          // Re-throw if it's not a NoStreetViewException
+          rethrow;
+        }
       }
-      _streetViewPanorama.options =
-      fakeOptions as street_view.StreetViewPanoramaOptions?;
+      _streetViewPanorama.options = fakeOptions;
     }
     if (options.visible != null && !options.visible!) {
       //visible set to false can't trigger onStatusChanged
@@ -104,7 +110,7 @@ class FlutterGoogleStreetViewPlugin {
       });
     }
     initDone.future.then((done) {
-      _updateStatus(options as street_view.StreetViewPanoramaOptions);
+      _updateStatus(options);
       _streetViewInit = true;
       _setupListener();
       if (_viewReadyResult != null) {
@@ -144,10 +150,10 @@ class FlutterGoogleStreetViewPlugin {
       ..style.height = '100%') as HTMLElement;
     _divs[_viewId] = _div;
     _plugins[_viewId] ??= this;
-    // ui.platformViewRegistry.registerViewFactory(
-    //   _getViewType(_viewId),
-    //   (int viewId) => _div,
-    // );
+    ui.platformViewRegistry.registerViewFactory(
+      _getViewType(_viewId),
+      (int viewId) => _div,
+    );
     _setup(arg);
     _methodChannel = MethodChannel(
       'flutter_google_street_view_$viewId',
