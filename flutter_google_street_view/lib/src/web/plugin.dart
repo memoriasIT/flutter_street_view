@@ -221,27 +221,27 @@ class FlutterGoogleStreetViewPlugin {
 
     _statusChangedListener = _streetViewPanorama.addListener(
       "status_changed",
-          () {
+      (() {
         _methodChannel.invokeMethod("pano#onChange", _getLocation());
-      } as JSFunction,
+      }).toJS,
     );
     _povChangedListener = _streetViewPanorama.addListener(
       "pov_changed",
-          () {
+      (() {
         _methodChannel.invokeMethod("camera#onChange", _getPanoramaCamera());
-      } as JSFunction,
+      }).toJS,
     );
     _zoomChangedListener = _streetViewPanorama.addListener(
       "zoom_changed",
-          () {
+      (() {
         _methodChannel.invokeMethod("camera#onChange", _getPanoramaCamera());
-      } as JSFunction,
+      }).toJS,
     );
     _closeclickListener = _streetViewPanorama.addListener(
       "closeclick",
-          () {
+      (() {
         _methodChannel.invokeMethod("close#onClick", true);
-      } as JSFunction,
+      }).toJS,
     );
   }
 
