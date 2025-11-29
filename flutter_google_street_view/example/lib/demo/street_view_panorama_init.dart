@@ -9,8 +9,7 @@ class StreetViewPanoramaInitDemo extends StatefulWidget {
   State<StatefulWidget> createState() => _StreetViewPanoramaInitDemoState();
 }
 
-class _StreetViewPanoramaInitDemoState
-    extends State<StreetViewPanoramaInitDemo> {
+class _StreetViewPanoramaInitDemoState extends State<StreetViewPanoramaInitDemo> {
   Uint8List? _bluePoint;
 
   @override
@@ -101,16 +100,12 @@ class _StreetViewPanoramaInitDemoState
                  */
                 markers: <Marker>[
                   Marker(
-                    icon: _bluePoint == null
-                        ? BitmapDescriptor.defaultMarker
-                        : BitmapDescriptor.fromBytes(_bluePoint!),
+                    icon: _bluePoint == null ? BitmapDescriptor.defaultMarker : BitmapDescriptor.fromBytes(_bluePoint!),
                     markerId: MarkerId("0"),
                     position: SAN_FRAN,
                     onTap: () {
                       if (_bluePoint == null)
-                        DefaultAssetBundle.of(context)
-                            .load("assets/images/ic_dot.png")
-                            .then((data) {
+                        DefaultAssetBundle.of(context).load("assets/images/ic_dot.png").then((data) {
                           setState(() {
                             _bluePoint = data.buffer.asUint8List();
                           });
@@ -147,6 +142,80 @@ class _StreetViewPanoramaInitDemoState
                       duration: 750,
                       camera: StreetViewPanoramaCamera(
                           bearing: 90, tilt: 30, zoom: 3));*/
+                },
+                onPanoramaChangeListener: (location, error) {
+                  print("location: $location");
+                  print("onPanoramaChangeListener: $error");
+
+                  if (error != null) {
+                    final errorString = error.toString();
+
+                    // Check if it's a StreetViewPanoramaException
+                    // The error message will start with "StreetViewPanoramaException"
+                    if (errorString.startsWith('StreetViewPanoramaException')) {
+                      // This is a StreetViewPanoramaException
+                      print("StreetViewPanoramaException detected");
+                      print("Error: ${errorString}");
+
+                      // Try to access exception properties using dynamic access
+                      // StreetViewPanoramaException has: message, originalError,
+                      // location, panoId, errorCode
+                      try {
+                        final dynamic exception = error;
+                        if (exception.message != null) {
+                          print("User-friendly message: ${exception.message}");
+                        }
+                        if (exception.errorCode != null) {
+                          print("Error code: ${exception.errorCode}");
+                        }
+                        if (exception.location != null) {
+                          print("Requested location: ${exception.location}");
+                        }
+                        if (exception.panoId != null) {
+                          print("Requested panoId: ${exception.panoId}");
+                        }
+                        if (exception.originalError != null) {
+                          print("Original error: ${exception.originalError}");
+                        }
+
+                        // Show user-friendly error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(exception.message ?? errorString),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 4),
+                          ),
+                        );
+                      } catch (e) {
+                        // If property access fails, just use the error message
+                        print("Could not access exception properties: $e");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(errorString),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 4),
+                          ),
+                        );
+                      }
+                    } else {
+                      // Handle other types of exceptions
+                      print("Other error: ${error}");
+                      print("Error type: ${error.runtimeType}");
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Error: ${errorString}"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 4),
+                        ),
+                      );
+                    }
+                  } else if (location != null) {
+                    // Success case - panorama changed successfully
+                    print("Panorama changed successfully");
+                    print("Location: ${location.position?.latitude}, ${location.position?.longitude}");
+                    print("PanoId: ${location.panoId}");
+                  }
                 },
               ),
             ],
